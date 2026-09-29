@@ -1,0 +1,11 @@
+{
+  "name": "@aiw/registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@aiw/core": "workspace:*",
+    "fastify": "^5.6.0",
+    "zod": "^4.1.0"
+  }
+}

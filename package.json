@@ -1,0 +1,38 @@
+{
+  "name": "aiw-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=12.6.0 <13"
+  },
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "demo": "tsx scripts/demo.ts",
+    "demo:conflicts": "tsx scripts/demo.ts conflicts",
+    "demo:derived": "tsx scripts/demo.ts derived",
+    "demo:finance": "tsx scripts/demo.ts finance",
+    "demo:subscribe": "tsx scripts/demo.ts subscribe",
+    "benchmark": "tsx scripts/benchmark.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "tsx": "^4.20.0",
+    "vitest": "^3.2.0",
+    "eslint": "^9.0.0",
+    "typescript-eslint": "^8.0.0",
+    "prettier": "^3.6.0",
+    "fastify": "^5.6.0",
+    "zod": "^4.1.0",
+    "cheerio": "^1.1.2"
+  },
+  "packageManager": "pnpm@12.6.0"
+}

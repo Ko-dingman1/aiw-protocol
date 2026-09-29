@@ -1,0 +1,12 @@
+{
+  "name": "@aiw/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@aiw/core": "workspace:*",
+    "@aiw/resolver": "workspace:*",
+    "zod": "^4.1.0"
+  }
+}
