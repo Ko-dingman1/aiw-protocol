@@ -1,6 +1,6 @@
 {
   "name": "aiw-protocol",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx scripts/dev.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint .",
@@ -20,7 +20,9 @@
     "demo:derived": "tsx scripts/demo.ts derived",
     "demo:finance": "tsx scripts/demo.ts finance",
     "demo:subscribe": "tsx scripts/demo.ts subscribe",
-    "benchmark": "tsx scripts/benchmark.ts"
+    "benchmark": "tsx scripts/benchmark.ts",
+    "dev:live": "tsx scripts/dev.ts --live",
+    "demo:live": "tsx scripts/demo-live.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -1,0 +1,11 @@
+{
+  "name": "@aiw/dashboard",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@aiw/core": "workspace:*",
+    "@aiw/adapter-sdk": "workspace:*",
+    "fastify": "^5.6.0"
+  }
+}

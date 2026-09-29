@@ -1,5 +1,11 @@
 # Validation record
 
+## v0.2 — 2026-09-30
+
+Local Windows validation with Node.js 24.16.0 and pnpm 12.6.0: typecheck, lint, 27 tests across 4 files, build and format checks passed. Offline weather/conflicts/derived/SSE demos and benchmark passed. The compiled live demo successfully retrieved Open-Meteo data with explicit source attribution. Browser checks covered desktop and 390px mobile layout, conflict filtering, derivation input navigation and source details. Hosted CI status is available in the repository Actions tab.
+
+## v0.1 historical record
+
 Validated locally on Windows with Node.js v24.16.0 and pnpm v12.6.0 on 2026-09-29.
 
 | Check               | Result                                                        |

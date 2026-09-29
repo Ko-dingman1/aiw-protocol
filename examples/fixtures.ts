@@ -1,4 +1,7 @@
-import { NodeDescriptorSchema } from '../packages/core/src/index.js';
+import {
+  NodeDescriptorSchema,
+  PROTOCOL_VERSION,
+} from '../packages/core/src/index.js';
 import { weather } from './weather/index.js';
 import { finance } from './finance/index.js';
 import { conflicts } from './conflicting-sources/index.js';
@@ -10,7 +13,7 @@ export function fixtures() {
 export function descriptor(endpoint: string) {
   const objects = fixtures();
   return NodeDescriptorSchema.parse({
-    protocolVersion: '0.1',
+    protocolVersion: PROTOCOL_VERSION,
     nodeId: 'demo-knowledge-node',
     endpoint,
     provider: { id: 'demo-node-operator', name: 'Demo Node Operator' },

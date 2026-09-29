@@ -1,11 +1,16 @@
 import { startRuntime } from './runtime.js';
-const runtime = await startRuntime(4000, 4001);
+const mode = process.argv.includes('--live') ? 'live' : 'mock';
+const runtime = await startRuntime(4000, 4001, 1000, { mode });
 console.log(
   'Registry: ' +
     runtime.registryUrl +
     ' | Node: ' +
     runtime.nodeUrl +
-    ' | Ctrl+C to stop',
+    ' | Dashboard: ' +
+    runtime.nodeUrl +
+    ' (' +
+    mode +
+    ') | Ctrl+C to stop',
 );
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
   process.once(signal, () => {

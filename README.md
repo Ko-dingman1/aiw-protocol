@@ -1,8 +1,21 @@
-# AIW · Protocol Prototype v0.1
+# AIW · Protocol Prototype v0.2
 
 **Experimental — AI-Native Knowledge Exchange Network.** A small HTTP prototype for discovering providers and retrieving structured, provenance-aware Knowledge Objects.
 
 [한국어 안내](README.ko.md) · [Architecture](docs/architecture.md) · [Protocol](docs/protocol.md) · [Object contract](docs/knowledge-object.md)
+
+## New in v0.2
+
+![AIW Observatory dashboard](docs/images/dashboard-v0.2.png)
+
+- Korean responsive dashboard: discovery, search, namespace filters, conflicting claims, provenance, derivation navigation and raw JSON.
+- Optional real Seoul weather via Open-Meteo, with validated responses, an 8-second timeout, 60-second cache/cooldown and coalesced requests.
+- Honest live/mock labels; upstream failures never silently substitute fictional weather.
+- Windows checkout line endings fixed for consistent CI formatting.
+
+Run `pnpm dev:live`, then open [the local dashboard](http://127.0.0.1:4001). For offline mock data, use `pnpm dev`. The API is fetched at startup and on manual refresh; SSE distributes updates to connected dashboards. Live mode still includes fictional finance and organization examples.
+
+See [v0.2 migration and operation](docs/v0.2.md).
 
 ## Problem and hypothesis
 
@@ -17,13 +30,13 @@ flowchart LR
   Registry -->|candidate descriptors| Resolver
   Resolver -->|node locations| Agent
   Agent -->|HTTP query / fetch / SSE| Node
-  Source[Mock source records] --> Adapter --> Node
+  Source[Mock records or Open-Meteo API] --> Adapter --> Node
   Node -->|Knowledge Objects| Agent
 ```
 
 The **control plane** discovers nodes, namespaces, schemas and capabilities. The registry stores descriptors only; the resolver is a TypeScript library that performs registry HTTP lookups. The **knowledge plane** carries objects, source metadata, evidence, provenance, versions and subscriptions directly between client and node. The resolver does not proxy knowledge.
 
-One local node hosts weather, finance and conflicting-provider examples. Its operator is distinct from each object's publishing provider. No database, LLM, Docker or external data service is required.
+One local node hosts weather, finance and conflicting-provider examples. Its operator is distinct from each object's publishing provider. No database, LLM or Docker is required. Offline mode needs no external service; optional live mode uses Open-Meteo.
 
 ## Quick start
 
@@ -50,7 +63,7 @@ pnpm build
 pnpm format:check
 ```
 
-All data is **fictional/mock**. The fixed initial timestamp is not a current observation. SSE simulates new observations. The build emits runnable JavaScript into ignored `dist/`; `node dist/scripts/demo.js` runs the compiled demo.
+All default demo data is **fictional/mock**. `pnpm demo:live` and `pnpm dev:live` explicitly opt into external model weather data. The fixed initial timestamp is not a current observation. SSE simulates new observations. The build emits runnable JavaScript into ignored `dist/`; `node dist/scripts/demo.js` runs the compiled demo.
 
 ## Knowledge Object
 
@@ -99,6 +112,7 @@ The response is an `objects` array containing an object shaped like this (initia
 
 | Path                 | Responsibility                                                     |
 | -------------------- | ------------------------------------------------------------------ |
+| apps/dashboard       | Korean browser UI served by the node                               |
 | apps/registry        | In-memory descriptor registration and discovery                    |
 | apps/weather-node    | Generic in-memory node hosting demo namespaces                     |
 | apps/demo-client     | Command-line agent with actual discovery                           |
@@ -121,7 +135,7 @@ The response is an `objects` array containing an object shaped like this (initia
 
 ## Non-goals
 
-v0.1 does not replace HTTP, the Web, search engines, MCP, A2A or RDF. It does not build AGI, a global truth database, cryptocurrency, blockchain consensus or a new transport layer, and does not solve all ontology or global identity problems. AIW is neither a database nor an LLM nor primarily an agent chat protocol.
+v0.2 does not replace HTTP, the Web, search engines, MCP, A2A or RDF. It does not build AGI, a global truth database, cryptocurrency, blockchain consensus or a new transport layer, and does not solve all ontology or global identity problems. AIW is neither a database nor an LLM nor primarily an agent chat protocol.
 
 ## Benchmark and related work
 
@@ -133,7 +147,7 @@ REST APIs, RDF/Semantic Web, JSON-LD, knowledge graphs, MCP, A2A and existing ma
 
 Local trusted demonstration only: no authentication enforcement, persistence, schema registry, provider verification, federation, pagination, historical retrieval or SSE replay. Structural verification cannot prove truth. Namespace/schema strings are conventions, not an ontology. Do not expose the registry publicly: registrations are unauthenticated and client endpoints must be trusted.
 
-v0.2 explores schemas, entities, provider identity and established authentication; v0.3 explores JSON-LD/RDF and MCP adapters. Federation, signatures and alternative encodings remain research. See [roadmap](docs/roadmap.md) and [security](docs/security.md).
+Future releases explore domain schemas, history, provider identity and established authentication, followed by JSON-LD/RDF and MCP adapters. Federation, signatures and alternative encodings remain research. See [roadmap](docs/roadmap.md) and [security](docs/security.md).
 
 ## Contributing and license
 

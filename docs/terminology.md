@@ -7,7 +7,7 @@
 | Provider         | Organization/person/service responsible for publishing an object                 |
 | Adapter          | Converts source-specific records into Knowledge Objects                          |
 | Knowledge Object | Typed, machine-readable information envelope; not automatically a fact           |
-| Schema           | Meaning/structure identifier, with no full ontology system in v0.1               |
+| Schema           | Meaning/structure identifier, with no full ontology system in v0.2               |
 | Namespace        | Logical domain such as weather.kr, finance.krx, science.physics or software.npm  |
 | Registry         | Node metadata directory, not a knowledge store                                   |
 | Resolver         | Finds candidate locations using the registry                                     |

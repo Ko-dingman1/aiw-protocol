@@ -6,9 +6,20 @@ import {
   type NodeDescriptor,
 } from '../../../packages/core/src/index.js';
 import { installErrors } from '../../shared/http.js';
-export function createRegistry() {
+export function createRegistry(browserOrigin?: () => string) {
   const app = Fastify({ bodyLimit: 65536 });
   installErrors(app);
+  app.addHook('onRequest', async (request, reply) => {
+    if (
+      request.method === 'GET' &&
+      browserOrigin &&
+      request.headers.origin === browserOrigin()
+    ) {
+      reply
+        .header('access-control-allow-origin', browserOrigin())
+        .header('vary', 'Origin');
+    }
+  });
   const nodes = new Map<string, NodeDescriptor>();
   app.get('/nodes', async () => ({ nodes: [...nodes.values()] }));
   app.post('/nodes', async (request, reply) => {

@@ -14,6 +14,7 @@ export function createNode(
   initial: KnowledgeObject[],
   describe: () => NodeDescriptor,
   updateMs = 1000,
+  options: { simulateWeather?: boolean } = {},
 ) {
   const app = Fastify({ bodyLimit: 65536 });
   installErrors(app);
@@ -24,6 +25,13 @@ export function createNode(
     }),
   );
   const streams = new Set<ServerResponse>();
+  function publishKnowledge(input: KnowledgeObject): void {
+    const object = KnowledgeObjectSchema.parse(input);
+    const current = objects.get(object.id);
+    if (current && object.version <= current.version) return;
+    objects.set(object.id, object);
+    app.server.emit('aiw-update', object);
+  }
   function query(input: unknown) {
     const filter = QuerySchema.parse(input);
     if (filter.namespace && !describe().namespaces.includes(filter.namespace))
@@ -80,6 +88,7 @@ export function createNode(
   });
   let tick = 0;
   const updates = setInterval(() => {
+    if (options.simulateWeather === false) return;
     const current = objects.get('weather:seoul');
     if (!current) return;
     const now = new Date().toISOString();
@@ -97,13 +106,12 @@ export function createNode(
         },
       ],
     });
-    objects.set(next.id, next);
-    app.server.emit('aiw-update', next);
+    publishKnowledge(next);
   }, updateMs);
   updates.unref();
   app.addHook('preClose', async () => {
     clearInterval(updates);
     for (const stream of streams) stream.end();
   });
-  return app;
+  return Object.assign(app, { publishKnowledge });
 }

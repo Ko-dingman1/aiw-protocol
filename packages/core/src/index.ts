@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export const PROTOCOL_VERSION = '0.1' as const;
+export const PROTOCOL_VERSION = '0.2' as const;
 const text = z.string().min(1).max(512);
 export const ProviderSchema = z.object({ id: text, name: text }).strict();
 export const ObjectTypeSchema = z.enum([
@@ -143,6 +143,7 @@ export const ErrorCodeSchema = z.enum([
   'AIW_QUERY_INVALID',
   'AIW_ACCESS_DENIED',
   'AIW_INTERNAL_ERROR',
+  'AIW_UPSTREAM_UNAVAILABLE',
 ]);
 export const ErrorResponseSchema = z.object({
   error: z.object({ code: ErrorCodeSchema, message: z.string() }),

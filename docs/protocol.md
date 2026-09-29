@@ -1,6 +1,6 @@
-# HTTP protocol v0.1
+# HTTP protocol v0.2
 
-All JSON request/response bodies use application/json; the descriptor's protocolVersion is "0.1". No custom URI or transport is introduced. Clients receive complete candidate descriptors and connect directly to the endpoint root.
+All JSON request/response bodies use application/json; the descriptor's protocolVersion is "0.2". No custom URI or transport is introduced. Clients receive complete candidate descriptors and connect directly to the endpoint root.
 
 | Operation | Endpoint                    | Request                                             | Success                                       |
 | --------- | --------------------------- | --------------------------------------------------- | --------------------------------------------- |
@@ -30,3 +30,9 @@ SSE sends event: object and a JSON data line, with blank-line frame separators. 
 Invalid registration: AIW_SCHEMA_INVALID (400). Invalid filter/JSON: AIW_QUERY_INVALID (400). Unsupported namespace: AIW_NAMESPACE_UNSUPPORTED (400). Missing object or no resolver candidates: AIW_OBJECT_NOT_FOUND / AIW_NODE_NOT_FOUND (404). Internal failures: AIW_INTERNAL_ERROR (500), with internal details suppressed. The client reports AIW_CAPABILITY_UNSUPPORTED before requesting an unadvertised operation; AIW_ACCESS_DENIED is reserved for future authorization. Invalid remote envelopes become AIW_SCHEMA_INVALID. Nonexistent routes use the same error envelope.
 
 Bodies are limited to 64 KiB by the apps. Regular client requests time out after five seconds. SSE defaults to a 30-second abort signal unless the caller supplies one. This is a bounded demo client, not an automatic reconnection implementation.
+
+## Dashboard helper routes (v0.2)
+
+These are local application routes, not universal AIW protocol operations. GET / serves the UI; GET /dashboard-config returns local registry/node URLs and mode; GET /source-status returns state, lastAttemptAt, lastSuccessAt, nextRefreshAt and optional error. POST /refresh requires x-aiw-request: dashboard and, when supplied, a matching Origin. It returns {object, status}; upstream failure returns AIW_UPSTREAM_UNAVAILABLE (503). Mock mode rejects live refresh. The API cooldown is 60 seconds, including failures.
+
+Live SSE events occur when a successful manual refresh publishes a newer object. There is no background external API polling. The browser reconnects SSE automatically but does not recover missed events; use the query button to resynchronize.

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AIW Observatory · 지식 네트워크 탐색</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a href="/" class="brand"
+        ><span class="logo">a<span>i</span>w</span><span>OBSERVATORY</span></a
+      >
+      <div class="nav-label">WORKSPACE</div>
+      <nav aria-label="화면 탐색">
+        <a href="#overview" class="active">◈ <span>네트워크 개요</span></a
+        ><a href="#explorer">⌕ <span>지식 탐색</span></a
+        ><a href="#inspector">≋ <span>출처 &amp; 계보</span></a>
+      </nav>
+      <div class="sidebar-bottom">
+        <span class="version">PROTOCOL 0.2</span>
+        <p>구조화된 지식.<br />드러나는 출처.</p>
+        <a
+          href="https://github.com/Ko-dingman1/aiw-protocol"
+          target="_blank"
+          rel="noreferrer"
+          >GitHub ↗</a
+        >
+      </div>
+    </aside>
+    <main id="overview">
+      <header>
+        <div class="breadcrumb">AIW / <strong>네트워크 개요</strong></div>
+        <span class="experimental">EXPERIMENTAL</span>
+      </header>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">KNOWLEDGE, WITH CONTEXT</p>
+          <h1>정보를 넘어,<br /><span>출처까지 연결합니다.</span></h1>
+          <p class="lede">
+            노드를 발견하고, 구조화된 지식을 직접 조회하세요.<br />서로 다른
+            주장과 그 근거를 나란히 살펴볼 수 있습니다.
+          </p>
+        </div>
+        <div class="intro-right">
+          <span id="mode" class="badge">연결 준비 중</span>
+          <p>SEOUL, KR <span>37.5665° N · 126.9780° E</span></p>
+        </div>
+      </section>
+      <section class="flow" aria-label="실제 검색 경로">
+        <div><small>01 / REQUEST</small><strong>Agent</strong></div>
+        <b>→</b>
+        <div>
+          <small>02 / DISCOVER</small><strong>Resolver · Registry</strong>
+        </div>
+        <b>→</b>
+        <div>
+          <small>03 / DIRECT QUERY</small><strong>Knowledge Node</strong>
+        </div>
+        <b>→</b>
+        <div><small>04 / RECEIVE</small><strong>Knowledge Object</strong></div>
+        <span id="connection" role="status">연결 중</span>
+      </section>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <section class="metrics" aria-label="요약">
+        <article class="weather-card">
+          <div class="card-top">
+            <span>서울 · 기온</span
+            ><span id="weather-label" class="badge">—</span>
+          </div>
+          <div class="temperature">
+            <span id="temperature">—</span><small>°C</small
+            ><span class="sun" aria-hidden="true">☀</span>
+          </div>
+          <p id="weather-time">데이터를 불러오는 중입니다.</p>
+          <div class="weather-bottom">
+            <a
+              href="https://open-meteo.com/"
+              target="_blank"
+              rel="noreferrer"
+              id="attribution"
+              >Weather data by Open-Meteo ↗</a
+            ><button id="refresh" type="button" disabled>
+              날씨 새로고침 ↻
+            </button>
+          </div>
+        </article>
+        <article class="metric">
+          <span>발견한 노드</span><strong id="node-count">—</strong>
+          <p id="node-name">Registry에서 검색합니다.</p>
+          <span class="metric-mark">↗</span>
+        </article>
+        <article class="metric">
+          <span>Knowledge Objects</span><strong id="object-count">—</strong>
+          <p>출처를 포함한 구조화 데이터</p>
+          <span class="metric-mark">{ }</span>
+        </article>
+      </section>
+      <section class="workspace" id="explorer">
+        <div class="explorer">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">EXPLORE THE NETWORK</p>
+              <h2>지식 탐색</h2>
+            </div>
+            <button id="reload" type="button" class="subtle">
+              다시 조회 ↻
+            </button>
+          </div>
+          <div class="filters">
+            <label
+              ><span class="sr-only">검색</span
+              ><input
+                id="search"
+                type="search"
+                placeholder="주제, 속성, 제공자 검색…" /></label
+            ><label
+              ><span class="sr-only">네임스페이스</span
+              ><select id="namespace">
+                <option value="">모든 네임스페이스</option>
+              </select></label
+            >
+          </div>
+          <div class="tabs" role="group" aria-label="객체 유형">
+            <button data-view="all" class="selected">전체</button
+            ><button data-view="conflicts">상충하는 주장</button
+            ><button data-view="derived">파생 지식</button>
+          </div>
+          <p id="result-summary" class="result-summary" aria-live="polite"></p>
+          <div id="objects" class="objects"></div>
+        </div>
+        <aside id="inspector" class="inspector">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">FOLLOW THE EVIDENCE</p>
+              <h2>출처 &amp; 계보</h2>
+            </div>
+            <span class="detail-icon">↳</span>
+          </div>
+          <div id="details">
+            <p class="empty">
+              객체를 선택하면 제공자, 원본 출처와 변환 이력이 표시됩니다.
+            </p>
+          </div>
+        </aside>
+      </section>
+      <footer>
+        <span
+          ><b>AIW</b> transports evidence; it does not manufacture truth.</span
+        ><span>v0.2 · 로컬 실험용 · 금융/직원 수는 가상 데이터</span>
+      </footer>
+    </main>
+  </body>
+</html>
