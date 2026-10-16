@@ -5,32 +5,32 @@ import {
   KnowledgeObjectSchema,
   NodeDescriptorSchema,
   QuerySchema,
+  QueryRequestSchema,
+  VersionQuerySchema,
   matches,
   type KnowledgeObject,
   type NodeDescriptor,
 } from '../../../packages/core/src/index.js';
 import { installErrors } from '../../shared/http.js';
+import { schemaCatalog } from '../../../packages/core/src/schemas.js';
+import { KnowledgeStore } from './store.js';
+import { queryPage } from './pagination.js';
 export function createNode(
   initial: KnowledgeObject[],
   describe: () => NodeDescriptor,
   updateMs = 1000,
-  options: { simulateWeather?: boolean } = {},
+  options: {
+    simulateWeather?: boolean;
+    retentionLimit?: number;
+    maxObjects?: number;
+  } = {},
 ) {
   const app = Fastify({ bodyLimit: 65536 });
   installErrors(app);
-  const objects = new Map(
-    initial.map((object) => {
-      const valid = KnowledgeObjectSchema.parse(object);
-      return [valid.id, valid];
-    }),
-  );
+  const store = new KnowledgeStore(initial, options);
   const streams = new Set<ServerResponse>();
   function publishKnowledge(input: KnowledgeObject): void {
-    const object = KnowledgeObjectSchema.parse(input);
-    const current = objects.get(object.id);
-    if (current && object.version <= current.version) return;
-    objects.set(object.id, object);
-    app.server.emit('aiw-update', object);
+    if (store.put(input)) app.server.emit('aiw-update', store.get(input.id));
   }
   function query(input: unknown) {
     const filter = QuerySchema.parse(input);
@@ -45,18 +45,41 @@ export function createNode(
     NodeDescriptorSchema.parse(describe()),
   );
   app.post('/query', async (request) => {
-    const filter = query(request.body);
-    return {
-      objects: [...objects.values()].filter((object) =>
-        matches(object, filter),
-      ),
-    };
+    const { limit, cursor, ...filter } = QueryRequestSchema.parse(request.body);
+    query(filter);
+    return queryPage(store.latest(), { ...filter, limit, cursor });
   });
   app.get<{ Params: { id: string } }>('/objects/:id', async (request) => {
-    const object = objects.get(request.params.id);
-    if (!object)
-      throw new AiwError('AIW_OBJECT_NOT_FOUND', 'Object not found', 404);
-    return object;
+    const { version } = VersionQuerySchema.parse(request.query);
+    return store.get(request.params.id, version);
+  });
+  app.get<{ Params: { id: string } }>('/objects/:id/history', async (request) =>
+    store.history(request.params.id),
+  );
+  app.get<{ Params: { id: string } }>('/objects/:id/verify', async (request) =>
+    store.verify(
+      request.params.id,
+      VersionQuerySchema.parse(request.query).version,
+    ),
+  );
+  app.get('/schemas', async () => ({
+    schemas: schemaCatalog().filter((schema) =>
+      describe().schemas.includes(schema.id),
+    ),
+  }));
+  app.get<{ Params: { id: string } }>('/schemas/:id', async (request) => {
+    const schema = schemaCatalog().find(
+      (schema) =>
+        schema.id === request.params.id &&
+        describe().schemas.includes(schema.id),
+    );
+    if (!schema)
+      throw new AiwError(
+        'AIW_SCHEMA_INVALID',
+        'Schema is not supported by this node',
+        404,
+      );
+    return schema;
   });
   app.get('/subscribe', async (request, reply) => {
     const filter = query(request.query);
@@ -89,8 +112,12 @@ export function createNode(
   let tick = 0;
   const updates = setInterval(() => {
     if (options.simulateWeather === false) return;
-    const current = objects.get('weather:seoul');
-    if (!current) return;
+    let current: KnowledgeObject;
+    try {
+      current = store.get('weather:seoul');
+    } catch {
+      return;
+    }
     const now = new Date().toISOString();
     const next = KnowledgeObjectSchema.parse({
       ...current,

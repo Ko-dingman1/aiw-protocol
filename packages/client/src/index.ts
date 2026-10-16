@@ -3,16 +3,22 @@ import {
   AiwError,
   KnowledgeObjectSchema,
   QuerySchema,
+  QueryRequestSchema,
+  QueryPageSchema,
+  HistorySchema,
+  VerificationSchema,
+  type QueryRequest,
   type KnowledgeObject,
   type NodeDescriptor,
   type Query,
 } from '../../core/src/index.js';
 import { request } from '../../resolver/src/http.js';
+import { SchemaDocumentSchema } from '../../core/src/schemas.js';
 export class AiwClient {
   constructor(private node: NodeDescriptor) {}
   private url(
     path: string,
-    capability: 'query' | 'fetch' | 'subscribe',
+    capability: NodeDescriptor['capabilities'][number],
   ): string {
     if (!this.node.capabilities.includes(capability))
       throw new AiwError(
@@ -22,21 +28,62 @@ export class AiwClient {
     return new URL(path, this.node.endpoint).href;
   }
   async query(filter: Query = {}): Promise<KnowledgeObject[]> {
-    const result = await request(
-      this.url('/query', 'query'),
-      z.object({ objects: z.array(KnowledgeObjectSchema) }),
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(QuerySchema.parse(filter)),
-      },
-    );
-    return result.objects;
+    const objects: KnowledgeObject[] = [];
+    for await (const object of this.iterate(filter)) objects.push(object);
+    return objects;
   }
-  fetch(id: string): Promise<KnowledgeObject> {
+  async *iterate(
+    filter: Query = {},
+    limit = 50,
+  ): AsyncGenerator<KnowledgeObject> {
+    const validated = QuerySchema.parse(filter);
+    const seen = new Set<string>();
+    let cursor: string | undefined;
+    do {
+      const page = await this.queryPage({ ...validated, limit, cursor });
+      for (const object of page.objects) yield object;
+      cursor = page.nextCursor;
+      if (cursor && (seen.has(cursor) || seen.size >= 10000))
+        throw new AiwError(
+          'AIW_QUERY_INVALID',
+          'Remote pagination does not terminate',
+        );
+      if (cursor) seen.add(cursor);
+    } while (cursor);
+  }
+  queryPage(input: QueryRequest = {}) {
+    return request(this.url('/query', 'query'), QueryPageSchema, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(QueryRequestSchema.parse(input)),
+    });
+  }
+  fetch(id: string, version?: number): Promise<KnowledgeObject> {
+    if (version !== undefined) z.number().int().positive().parse(version);
     return request(
-      this.url('/objects/' + encodeURIComponent(id), 'fetch'),
+      this.url('/objects/' + encodeURIComponent(id), 'fetch') +
+        (version === undefined ? '' : '?version=' + version),
       KnowledgeObjectSchema,
+    );
+  }
+  history(id: string) {
+    return request(
+      this.url('/objects/' + encodeURIComponent(id) + '/history', 'history'),
+      HistorySchema,
+    );
+  }
+  verify(id: string, version?: number) {
+    if (version !== undefined) z.number().int().positive().parse(version);
+    return request(
+      this.url('/objects/' + encodeURIComponent(id) + '/verify', 'verify') +
+        (version === undefined ? '' : '?version=' + version),
+      VerificationSchema,
+    );
+  }
+  schemas() {
+    return request(
+      this.url('/schemas', 'schemas'),
+      z.object({ schemas: z.array(SchemaDocumentSchema) }),
     );
   }
   async *subscribe(

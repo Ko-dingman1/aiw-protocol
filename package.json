@@ -1,6 +1,6 @@
 {
   "name": "aiw-protocol",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -22,7 +22,8 @@
     "demo:subscribe": "tsx scripts/demo.ts subscribe",
     "benchmark": "tsx scripts/benchmark.ts",
     "dev:live": "tsx scripts/dev.ts --live",
-    "demo:live": "tsx scripts/demo-live.ts"
+    "demo:live": "tsx scripts/demo-live.ts",
+    "demo:reliability": "tsx scripts/demo-reliability.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

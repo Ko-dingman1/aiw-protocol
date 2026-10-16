@@ -7,6 +7,21 @@
   --border: #dce5e3;
   --green: #126653;
 }
+.history-label {
+  display: block;
+  font-size: 11px;
+  color: #435f4d;
+  margin: 12px 0;
+}
+.history-label select {
+  margin-left: 8px;
+  padding: 7px;
+  border: 1px solid #dce5e3;
+  border-radius: 5px;
+  background: white;
+  color: #274943;
+  max-width: 100%;
+}
 * {
   box-sizing: border-box;
 }

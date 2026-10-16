@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export const PROTOCOL_VERSION = '0.2' as const;
+export const PROTOCOL_VERSION = '0.3' as const;
 const text = z.string().min(1).max(512);
 export const ProviderSchema = z.object({ id: text, name: text }).strict();
 export const ObjectTypeSchema = z.enum([
@@ -98,7 +98,14 @@ export const KnowledgeObjectSchema = z
   });
 export type KnowledgeObject = z.infer<typeof KnowledgeObjectSchema>;
 export type Provider = z.infer<typeof ProviderSchema>;
-export const CapabilitySchema = z.enum(['query', 'fetch', 'subscribe']);
+export const CapabilitySchema = z.enum([
+  'query',
+  'fetch',
+  'subscribe',
+  'history',
+  'schemas',
+  'verify',
+]);
 export const NodeDescriptorSchema = z
   .object({
     protocolVersion: z.literal(PROTOCOL_VERSION),
@@ -123,9 +130,44 @@ export const QuerySchema = z
     property: text.optional(),
     type: ObjectTypeSchema.optional(),
     provider: text.optional(),
+    schema: text.optional(),
   })
   .strict();
 export type Query = z.infer<typeof QuerySchema>;
+export const QueryRequestSchema = QuerySchema.extend({
+  limit: z.number().int().min(1).max(100).default(50),
+  cursor: z.string().min(1).max(8192).optional(),
+});
+export type QueryRequest = z.input<typeof QueryRequestSchema>;
+export const QueryPageSchema = z
+  .object({
+    objects: z.array(KnowledgeObjectSchema).max(100),
+    nextCursor: z.string().max(8192).optional(),
+  })
+  .strict();
+export type QueryPage = z.infer<typeof QueryPageSchema>;
+export const VersionQuerySchema = z
+  .object({
+    version: z
+      .string()
+      .regex(/^[1-9]\d*$/)
+      .transform(Number)
+      .pipe(z.number().int().positive().max(Number.MAX_SAFE_INTEGER))
+      .optional(),
+  })
+  .strict();
+export const HistorySchema = z
+  .object({
+    id: text,
+    versions: z.array(z.number().int().positive()).max(100),
+    retained: z.number().int(),
+    retentionLimit: z.number().int(),
+    oldestAvailableVersion: z.number().int(),
+  })
+  .strict();
+export const VerificationSchema = z
+  .object({ valid: z.boolean(), issues: z.array(z.string()) })
+  .strict();
 export const DiscoverySchema = z
   .object({
     namespace: text.optional(),
@@ -144,6 +186,9 @@ export const ErrorCodeSchema = z.enum([
   'AIW_ACCESS_DENIED',
   'AIW_INTERNAL_ERROR',
   'AIW_UPSTREAM_UNAVAILABLE',
+  'AIW_VERSION_CONFLICT',
+  'AIW_VERSION_UNAVAILABLE',
+  'AIW_RESOURCE_LIMIT',
 ]);
 export const ErrorResponseSchema = z.object({
   error: z.object({ code: ErrorCodeSchema, message: z.string() }),
@@ -165,10 +210,12 @@ export interface AuthorizationPolicy {
   ): Promise<boolean>;
 }
 export function matches(object: KnowledgeObject, query: Query): boolean {
-  return Object.entries(query).every(([key, value]) =>
-    key === 'provider'
-      ? object.provider.id === value
-      : object[key as keyof Query] === value,
+  return Object.entries(query).every(
+    ([key, value]) =>
+      value === undefined ||
+      (key === 'provider'
+        ? object.provider.id === value
+        : object[key as keyof Query] === value),
   );
 }
 export function verify(

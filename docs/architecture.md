@@ -1,6 +1,6 @@
 # Architecture and rationale
 
-AIW Protocol Prototype v0.2 is experimental. It tests machine-agent-oriented knowledge discovery and exchange over normal HTTP.
+AIW Protocol Prototype v0.3 is experimental. It tests machine-agent-oriented knowledge discovery and exchange over normal HTTP.
 
 ## Conceptual comparison
 
@@ -45,9 +45,9 @@ Provider identifies responsibility for publishing. Source identifies origin. Evi
 
 ## Tradeoffs
 
-Opaque IDs and integer versions make local derivations easy to inspect. Exact input versions are checked against supplied objects; there is no graph database, remote crawling, cycle analysis beyond direct self-reference, or history store. SSE broadcasts simulated weather changes and cleans up listeners on disconnect; slow clients are disconnected. There is no replay or delivery guarantee. HTTP addresses are endpoint roots; path-prefix deployments are not supported.
+Opaque IDs and integer versions make local derivations easy to inspect. A bounded in-memory store retains immutable versions; node verification resolves direct references against those exact versions. There is no graph database, remote crawling, or cycle analysis beyond direct self-reference. SSE broadcasts simulated weather changes and cleans up listeners on disconnect; slow clients are disconnected. There is no replay or delivery guarantee. HTTP addresses are endpoint roots; path-prefix deployments are not supported.
 
-The control plane includes schema identifiers and capability metadata, but not executable schema distribution. The knowledge plane includes version metadata but stores only the latest version. Future authentication can implement the AuthorizationPolicy interface with established mechanisms; the current apps do not enforce it.
+The control plane includes schema identifiers and capability metadata. Nodes publish a fixed domain JSON Schema catalog and validate ingestion; cross-field constraints are additionally enforced in TypeScript. Queries return latest versions in bounded cursor pages; historical fetches address exact retained versions. Neither history nor the registry survives a restart. Future authentication can implement the AuthorizationPolicy interface with established mechanisms; the current apps do not enforce it.
 
 ## v0.2 dashboard and external adapter
 

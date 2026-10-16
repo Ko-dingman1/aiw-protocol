@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Validate four demo domains at ingestion and expose schema documents.
+- Retain immutable bounded history and fetch exact input versions.
+- Add cursor pagination, schema filtering and client iteration.
+- Add retained-reference verification and dashboard history/schema inspection.
+- Add a reliability demo and explicit portfolio/production completion criteria.
+- Bump protocol to 0.3; upgrade all components together.
+
 ## 0.2.0
 
 - Add optional validated Open-Meteo Seoul weather adapter, caching, timeout and error status.

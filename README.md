@@ -1,10 +1,28 @@
-# AIW · Protocol Prototype v0.2
+# AIW · Protocol Prototype v0.3
 
 **Experimental — AI-Native Knowledge Exchange Network.** A small HTTP prototype for discovering providers and retrieving structured, provenance-aware Knowledge Objects.
 
 [한국어 안내](README.ko.md) · [Architecture](docs/architecture.md) · [Protocol](docs/protocol.md) · [Object contract](docs/knowledge-object.md)
 
-## New in v0.2
+## Version history
+
+Each published tag preserves the complete source at that milestone. Updating the default branch does not remove earlier versions.
+
+| Version | Milestone                                                 | Source                                                                   |
+| ------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
+| v0.1.0  | Initial protocol, discovery, structured objects and demos | [Browse v0.1.0](https://github.com/Ko-dingman1/aiw-protocol/tree/v0.1.0) |
+| v0.2.0  | Live weather integration and Korean dashboard             | [Browse v0.2.0](https://github.com/Ko-dingman1/aiw-protocol/tree/v0.2.0) |
+| v0.3.0  | Domain validation, version history and cursor pagination  | [Browse v0.3.0](https://github.com/Ko-dingman1/aiw-protocol/tree/v0.3.0) |
+
+[Compare v0.1.0 → v0.2.0](https://github.com/Ko-dingman1/aiw-protocol/compare/v0.1.0...v0.2.0) · [Compare v0.2.0 → v0.3.0](https://github.com/Ko-dingman1/aiw-protocol/compare/v0.2.0...v0.3.0) · [Changelog](CHANGELOG.md)
+
+## New in v0.3
+
+Domain validation rejects wrong values/units and unknown schemas. Immutable retained versions let clients fetch the exact inputs of derived knowledge. Queries use bounded cursor pages, and the dashboard exposes history, server verification and domain rules.
+
+Run `pnpm demo:reliability` for a deterministic walkthrough. See [v0.3 contracts and limits](docs/v0.3.md) and [completion criteria (Korean)](docs/completion-criteria.ko.md).
+
+## Live weather and dashboard (since v0.2)
 
 ![AIW Observatory dashboard](docs/images/dashboard-v0.2.png)
 
@@ -145,9 +163,9 @@ REST APIs, RDF/Semantic Web, JSON-LD, knowledge graphs, MCP, A2A and existing ma
 
 ## Limitations and roadmap
 
-Local trusted demonstration only: no authentication enforcement, persistence, schema registry, provider verification, federation, pagination, historical retrieval or SSE replay. Structural verification cannot prove truth. Namespace/schema strings are conventions, not an ontology. Do not expose the registry publicly: registrations are unauthenticated and client endpoints must be trusted.
+Local trusted demonstration only: no authentication enforcement, persistence, remotely managed schema registry, provider verification, federation or SSE replay. History is bounded and lost on restart; pagination is a live view. Structural verification cannot prove truth. Namespace/schema strings are conventions, not an ontology. Do not expose the registry publicly: registrations are unauthenticated and client endpoints must be trusted.
 
-Future releases explore domain schemas, history, provider identity and established authentication, followed by JSON-LD/RDF and MCP adapters. Federation, signatures and alternative encodings remain research. See [roadmap](docs/roadmap.md) and [security](docs/security.md).
+Future releases explore persistent history, provider identity and established authentication, followed by JSON-LD/RDF and MCP adapters. Federation, signatures and alternative encodings remain research. See [roadmap](docs/roadmap.md) and [security](docs/security.md).
 
 ## Contributing and license
 

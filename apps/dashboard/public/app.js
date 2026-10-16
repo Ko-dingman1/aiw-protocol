@@ -1,8 +1,12 @@
+import { addInspection } from './inspection.js';
 const $ = (id) => document.getElementById(id);
 let config;
 let objects = [];
 let view = 'all';
 let selectedId;
+let inspectedVersion;
+let detailsKey;
+let selectionRequest = 0;
 let stream;
 let busy = false;
 let weatherStatus;
@@ -102,7 +106,9 @@ function renderObjects() {
     );
     button.append(top, text('p', object.subject, 'subject'), bottom);
     button.addEventListener('click', () => {
+      selectionRequest++;
       selectedId = object.id;
+      inspectedVersion = undefined;
       renderObjects();
       renderDetails();
     });
@@ -115,8 +121,16 @@ function row(label, value) {
   return node;
 }
 function renderDetails() {
-  const object = objects.find((item) => item.id === selectedId);
+  const object =
+    inspectedVersion ?? objects.find((item) => item.id === selectedId);
   if (!object) return;
+  const key =
+    object.id +
+    '@' +
+    object.version +
+    (inspectedVersion ? ':pinned' : ':latest');
+  if (key === detailsKey) return;
+  detailsKey = key;
   const panel = $('details');
   panel.replaceChildren();
   panel.append(
@@ -129,6 +143,15 @@ function renderDetails() {
     row('버전', 'v' + object.version),
     row('스키마', object.schema),
   );
+  if (inspectedVersion)
+    panel.append(
+      text(
+        'p',
+        '선택한 버전을 고정해서 보고 있습니다. 새 데이터가 와도 이 화면의 값은 바뀌지 않습니다.',
+        'verify',
+      ),
+    );
+  addInspection(object, panel, json, selectVersion);
   panel.append(text('h4', '변환 이력 · PROVENANCE', 'detail-subheading'));
   for (const entry of object.provenance ?? [])
     panel.append(
@@ -152,44 +175,65 @@ function renderDetails() {
         '↳ ' + ref.id + ' @ v' + ref.version,
         'reference',
       );
-      button.addEventListener('click', () => {
-        const input = objects.find(
-          (item) => item.id === ref.id && item.version === ref.version,
-        );
-        if (input) {
-          selectedId = input.id;
-          view = 'all';
-          $('search').value = '';
-          $('namespace').value = '';
-          for (const tab of document.querySelectorAll('[data-view]'))
-            tab.classList.toggle('selected', tab.dataset.view === 'all');
-          renderObjects();
-          renderDetails();
-        } else notice('참조한 정확한 버전이 현재 조회 결과에 없습니다.');
-      });
+      button.addEventListener('click', () =>
+        selectVersion(ref.id, ref.version),
+      );
       panel.append(button);
     }
   }
-  const resolved = refs.every((ref) =>
-    objects.some((item) => item.id === ref.id && item.version === ref.version),
-  );
-  panel.append(
-    text(
-      'p',
-      !refs.length
-        ? '파생 입력 참조가 없는 객체입니다. 출처 표시는 정보의 진위를 보증하지 않습니다.'
-        : resolved
-          ? '✓ 표시된 파생 참조가 확인되었습니다. 이 확인은 정보의 진위를 보증하지 않습니다.'
-          : '일부 입력 버전이 현재 조회 결과에 없습니다.',
-      'verify' + (resolved ? '' : ' warning'),
-    ),
-  );
   const raw = document.createElement('details');
   raw.append(
     text('summary', '원본 JSON 보기'),
     text('pre', JSON.stringify(object, null, 2)),
   );
   panel.append(raw);
+}
+async function selectVersion(id, version) {
+  const request = ++selectionRequest;
+  try {
+    const object = await json(
+      '/objects/' +
+        encodeURIComponent(id) +
+        (version === undefined ? '' : '?version=' + version),
+    );
+    if (request !== selectionRequest) return;
+    selectedId = id;
+    inspectedVersion = version === undefined ? undefined : object;
+    if (version === undefined) {
+      const index = objects.findIndex((item) => item.id === id);
+      if (index >= 0) objects[index] = object;
+      else objects.push(object);
+    }
+    view = 'all';
+    $('search').value = '';
+    $('namespace').value = '';
+    for (const tab of document.querySelectorAll('[data-view]'))
+      tab.classList.toggle('selected', tab.dataset.view === 'all');
+    detailsKey = undefined;
+    renderObjects();
+    renderDetails();
+  } catch (error) {
+    if (request === selectionRequest)
+      notice('버전을 조회하지 못했습니다: ' + error.message);
+  }
+}
+async function queryAll(endpoint) {
+  const result = [];
+  let cursor;
+  const seen = new Set();
+  do {
+    const page = await json(new URL('/query', endpoint), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ limit: 100, cursor }),
+    });
+    result.push(...page.objects);
+    cursor = page.nextCursor;
+    if (cursor && (seen.has(cursor) || seen.size >= 100))
+      throw new Error('페이지 조회가 끝나지 않습니다.');
+    if (cursor) seen.add(cursor);
+  } while (cursor);
+  return result;
 }
 function renderSummary() {
   $('object-count').textContent = objects.length;
@@ -233,15 +277,9 @@ async function load() {
     if (!nodes.length)
       throw new Error('Registry에서 연결 가능한 로컬 노드를 찾지 못했습니다.');
     const results = await Promise.all(
-      nodes.map((node) =>
-        json(new URL('/query', node.endpoint), {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: '{}',
-        }),
-      ),
+      nodes.map((node) => queryAll(node.endpoint)),
     );
-    objects = results.flatMap((result) => result.objects);
+    objects = results.flat();
     $('node-count').textContent = nodes.length;
     $('node-name').textContent = nodes.map((node) => node.nodeId).join(', ');
     const old = $('namespace').value;

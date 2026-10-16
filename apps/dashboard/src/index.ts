@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import type { FastifyInstance } from 'fastify';
 import {
   AiwError,
+  PROTOCOL_VERSION,
   type KnowledgeObject,
 } from '../../../packages/core/src/index.js';
 import type { WeatherStatus } from '../../../packages/adapter-sdk/src/open-meteo.js';
@@ -32,6 +33,7 @@ export function registerDashboard(
   for (const [route, file, type] of [
     ['/', 'index.html', 'text/html'],
     ['/app.js', 'app.js', 'text/javascript'],
+    ['/inspection.js', 'inspection.js', 'text/javascript'],
     ['/style.css', 'style.css', 'text/css'],
   ] as const) {
     app.get(route, async (_request, reply) =>
@@ -43,7 +45,7 @@ export function registerDashboard(
     );
   }
   app.get('/dashboard-config', async () => ({
-    protocolVersion: '0.2',
+    protocolVersion: PROTOCOL_VERSION,
     registryUrl: options.registryUrl(),
     nodeUrl: options.nodeUrl(),
     mode: options.mode,

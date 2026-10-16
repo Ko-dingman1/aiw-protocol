@@ -8,13 +8,13 @@ Knowledge envelope and origins, versioned derivations, node descriptor, in-memor
 
 Open-Meteo adapter, optional live weather, Korean responsive dashboard, source status and manual refresh, caching/timeouts, browser discovery and SSE, and Windows CI line-ending repair.
 
-## Next reliability work
+## v0.3 — reliability
 
-Domain schema catalog, richer entity identifiers, provider identity, established authentication integration, immutable version history and pagination remain unimplemented.
+Domain schema validation and catalog, bounded immutable version history, exact-version reference verification, cursor pagination, and dashboard inspection are implemented. See [contracts and limits](v0.3.md).
 
-## v0.3 — proposed
+## Next steps — proposed
 
-JSON-LD/RDF interoperability experiments, an MCP adapter, and more source adapters with conformance tests.
+Persistent storage and recovery, provider identity, established authentication integration, observability and load/security testing. JSON-LD/RDF interoperability experiments, an MCP adapter, and more source adapters with conformance tests remain future work. See [completion criteria](completion-criteria.ko.md).
 
 ## Future research
 

@@ -19,6 +19,13 @@ export function descriptor(endpoint: string) {
     provider: { id: 'demo-node-operator', name: 'Demo Node Operator' },
     namespaces: [...new Set(objects.map((o) => o.namespace))],
     schemas: [...new Set(objects.map((o) => o.schema))],
-    capabilities: ['query', 'fetch', 'subscribe'],
+    capabilities: [
+      'query',
+      'fetch',
+      'subscribe',
+      'history',
+      'schemas',
+      'verify',
+    ],
   });
 }
